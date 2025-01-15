@@ -23,5 +23,11 @@ These additional references should also help you:
 
 ###
 Example Rest controller
-* /hello-world -> localhost:8080/hello-world/
-* health-check -> GET localhost:8080/actuator/health
+* Controllers
+  * localhost:8080/hello-world/
+* health-check
+  * GET localhost:8080/actuator/health
+* Open-API
+  * swagger schema -> http://localhost:8080/v3/api-docs
+  * swagger UI -> http://localhost:8080/swagger-ui/index.html
+  * Help -> https://www.baeldung.com/spring-rest-openapi-documentation
