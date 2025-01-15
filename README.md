@@ -31,3 +31,23 @@ Example Rest controller
   * swagger schema -> http://localhost:8080/v3/api-docs
   * swagger UI -> http://localhost:8080/swagger-ui/index.html
   * Help -> https://www.baeldung.com/spring-rest-openapi-documentation
+    * Consul deployment
+      * Integration doc https://cloud.spring.io/spring-cloud-consul/reference/html/
+        * Prerequisites
+          * Deploy consul on local machine -> https://developer.hashicorp.com/consul/tutorials/archive/docker-container-agents
+            * Please use `docker pull hashicorp/consul:latest` because `consul:latest` is not available anymore
+            * And use `hashicorp/consul` instead of `consul` in instructions above
+            * Run consul server
+            ```
+            docker run \
+            -d \
+            -p 8500:8500 \
+            -p 8600:8600/udp \
+            --name=badger \
+            hashicorp/consul agent -server -ui -node=server-1 -bootstrap-expect=1 -client=0.0.0.0
+            ```
+            * Run consul client
+            ```
+            docker run --name=ConsulUI hashicorp/consul agent -node=client-1 -retry-join=172.17.0.2
+            ```
+            * Go to Consul UI http://localhost:8500/ 

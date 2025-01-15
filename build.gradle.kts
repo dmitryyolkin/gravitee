@@ -28,6 +28,11 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-logging")
 	implementation("net.logstash.logback:logstash-logback-encoder:7.0.1")
 
+	// consul
+	implementation("org.springframework.cloud:spring-cloud-starter-bootstrap")
+	implementation("org.springframework.cloud:spring-cloud-starter-consul-config")
+	implementation("org.springframework.cloud:spring-cloud-starter-consul-discovery")
+
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
