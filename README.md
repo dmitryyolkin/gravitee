@@ -23,4 +23,5 @@ These additional references should also help you:
 
 ###
 Example Rest controller
-* GET localhost:8080/hello-world/
+* /hello-world -> localhost:8080/hello-world/
+* health-check -> GET localhost:8080/actuator/health
