@@ -1,0 +1,8 @@
+spring:
+  main:
+    banner-mode: off
+  application:
+    name: SpringBootApp
+
+logging:
+  config: "classpath:logback-spring.xml"
