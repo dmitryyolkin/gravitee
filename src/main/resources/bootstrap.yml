@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: SpringBootApp
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      discovery:
+        serviceName: ${spring.application.name}
+        instanceId: ${spring.application.name}:${random.value}

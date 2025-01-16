@@ -5,7 +5,6 @@ plugins {
 }
 
 group = "com.gravitee"
-version = "0.0.1-SNAPSHOT"
 
 java {
 	toolchain {
@@ -28,6 +27,11 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-logging")
 	implementation("net.logstash.logback:logstash-logback-encoder:7.0.1")
 
+	// consul
+	implementation("org.springframework.cloud:spring-cloud-starter-bootstrap")
+	implementation("org.springframework.cloud:spring-cloud-starter-consul-config")
+	implementation("org.springframework.cloud:spring-cloud-starter-consul-discovery")
+
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
@@ -40,4 +44,9 @@ dependencyManagement {
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+}
+
+// not to build plain jar
+tasks.getByName<Jar>("jar") {
+	enabled = false
 }

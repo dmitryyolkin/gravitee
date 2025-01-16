@@ -1,8 +1,12 @@
 spring:
   main:
     banner-mode: off
-  application:
-    name: SpringBootApp
+  cloud:
+    consul:
+      discovery:
+        enabled: true
+        healthCheckPath: /actuator/health
+        healthCheckInterval: 10s
 
 logging:
   config: "classpath:logback-spring.xml"

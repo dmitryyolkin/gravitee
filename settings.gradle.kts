@@ -1,1 +1,1 @@
-rootProject.name = "SpringBootApp"
+rootProject.name = "gravitee-example"
