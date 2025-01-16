@@ -1,0 +1,25 @@
+version: '3'
+
+services:
+  gravitee:
+    # please set certain image version
+    image: "gravitee-example:1.0.0"
+    environment:
+        CONSUL_HOST: consul
+    ports:
+      - "8080:8080"
+    networks:
+      consul-network:
+  consul:
+    image: "hashicorp/consul"
+    ports:
+      - "8500:8500"
+      - "8600:8600/udp"
+    hostname: "consul"
+    networks:
+      consul-network:
+        aliases:
+          - consul
+
+networks:
+  consul-network:

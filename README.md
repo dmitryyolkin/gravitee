@@ -30,6 +30,8 @@ These additional references should also help you:
   * swagger schema -> http://localhost:8080/v3/api-docs
   * swagger UI -> http://localhost:8080/swagger-ui/index.html
   * Help -> https://www.baeldung.com/spring-rest-openapi-documentation
+
+### Consul 
 * Consul deployment
   * Integration doc https://cloud.spring.io/spring-cloud-consul/reference/html/
   * Prerequisites
@@ -45,14 +47,15 @@ These additional references should also help you:
       --name=badger \
       hashicorp/consul agent -server -ui -node=server-1 -bootstrap-expect=1 -client=0.0.0.0
       ```
-      * Run consul client
-      ```
-      docker run --name=ConsulUI hashicorp/consul agent -node=client-1 -retry-join=172.17.0.2
-      ```
       * Go to Consul UI http://localhost:8500/ 
 
-### Deployment
+### Run from Docker
 * Build docker image 
   * go to project root and execute `sh ./build-docker.sh gravitee-example 1.0.0`
-* Run docker image
-  * `docker run --name gravitee -d -p 8080:8080 gravitee-example:1.0.0`
+* Run docker image based on Docker compose
+  * If you run from docker-compose - no need to run Consul separately (based on instruction above) 
+  * run -> `docker compose -f docker-compose.yml up --force-recreate`
+    * Go with service -> http://consul:8080/hello-world
+    * Go to Consul UI -> http://consul:8500/ui
+      * `consul` hostname is set in Docker compose 
+  * stop -> `docker compose -f docker-compose.yml down`

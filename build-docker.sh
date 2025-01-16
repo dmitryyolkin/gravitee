@@ -4,10 +4,16 @@ set -x
 
 APP_NAME=$1
 APP_VERSION=$2
+CONSUL_HOST=$3
 APP_TAG=${APP_NAME}:${APP_VERSION}
+
+if [[ -z "$CONSUL_HOST" ]]; then
+  CONSUL_HOST=localhost
+fi
 
 echo "APP_NAME=$APP_NAME"
 echo "APP_VERSION=$APP_VERSION"
+echo "CONSUL_HOST=$CONSUL_HOST"
 echo "APP_TAG=$APP_TAG"
 
 # Build JAR
@@ -21,6 +27,7 @@ echo "Build Docker: $APP_NAME"
 docker build \
       --build-arg APP_VERSION=${APP_VERSION} \
       --build-arg APP_NAME=$APP_NAME \
+      --build-arg CONSUL_HOST=$CONSUL_HOST \
       -f Dockerfile \
       -t $APP_TAG .
 
