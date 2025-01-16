@@ -1,0 +1,29 @@
+#!/bin/bash
+set -e
+set -x
+
+APP_NAME=$1
+APP_VERSION=$2
+APP_TAG=${APP_NAME}:${APP_VERSION}
+
+echo "APP_NAME=$APP_NAME"
+echo "APP_VERSION=$APP_VERSION"
+echo "APP_TAG=$APP_TAG"
+
+# Build JAR
+echo "Build Jar: $APP_NAME"
+./gradlew \
+    -Pversion=$APP_VERSION \
+    clean build
+
+echo "Build Docker: $APP_NAME"
+# use project root Dockerfile and build jar from target app
+docker build \
+      --build-arg APP_VERSION=${APP_VERSION} \
+      --build-arg APP_NAME=$APP_NAME \
+      -f Dockerfile \
+      -t $APP_TAG .
+
+# if we need to push in remote repo
+# we need to login to remote Docker repo first
+# and make docker push APP_TAG

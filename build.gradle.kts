@@ -5,7 +5,6 @@ plugins {
 }
 
 group = "com.gravitee"
-version = "0.0.1-SNAPSHOT"
 
 java {
 	toolchain {
@@ -45,4 +44,9 @@ dependencyManagement {
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+}
+
+// not to build plain jar
+tasks.getByName<Jar>("jar") {
+	enabled = false
 }
