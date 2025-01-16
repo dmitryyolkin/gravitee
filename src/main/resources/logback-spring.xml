@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
+<!--  раздел с определениями адптеров (конвертация в разные форматы и подключение к разным интерфейсам)  -->
+
+<!--  Appender: Определяет, куда будут отправляться логи. Если указан ConsoleAppender, логи помещаются в консоль.  -->
+<!--  Encoder: Определяет формат логов. Может использоваться простой текстовый формат с датой и сообщением.
+        Может использоваться спец. энкодер, для JSON-->
+    
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
             <timestampPattern>yyyy-MM-dd'T'HH:mm:ss.SSSZ</timestampPattern>
@@ -12,6 +18,35 @@
         </encoder>
     </appender>
 
+    <appender name="JSON" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp />
+                <loggerName />
+                <threadName />
+                <level />
+                <message />
+                <arguments />
+                <stackTrace />
+            </providers>
+        </encoder>
+    </appender>
+
+    <!--  Logger: Определяет уровень логирования для определенного пакета.  -->
+    <logger name="com.gravitee.example.controller" level="INFO" additivity="false">
+        <appender-ref ref="STDOUT" />
+    </logger>
+
+    <!--  Для уровня логирования INFO, используется простой логгер  -->
+    <logger name="com.yourpackage.aspects.EntryExitLoggingAspect" level="INFO" additivity="false">
+        <appender-ref ref="STDOUT" />
+    </logger>
+    <!--  Для уровня логирования DEBUG, используем расширенный логгер  -->
+    <logger name="com.yourpackage.aspects.DetailsLoggingAspect" level="DEBUG" additivity="false">
+        <appender-ref ref="STDOUT" />
+    </logger>
+
+    <!--  Root Logger: Определяет уровень логирования по умолчанию для всех логгеров, если они не переопределены.  -->
     <root level="DEBUG">
         <appender-ref ref="STDOUT"/>
     </root>
