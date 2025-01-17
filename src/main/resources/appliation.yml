@@ -1,6 +1,4 @@
 spring:
-  main:
-    banner-mode: off
   cloud:
     consul:
       discovery:
@@ -9,4 +7,4 @@ spring:
         healthCheckInterval: 10s
 
 logging:
-  config: "classpath:logback-spring.xml"
+  config: "classpath:logback.xml"
