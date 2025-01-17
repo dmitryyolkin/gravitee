@@ -16,6 +16,6 @@ RUN ls -ltrh /app
 
 WORKDIR /app/
 ENV APP_NAME=${APP_NAME}
-ENV JAVA_OPTS="-XX:+PrintFlagsFinal"
+ENV JAVA_OPTS="-XX:+PrintFlagsFinal -Dlogging.config=classpath:logback-cloud.xml"
 ENV CONSUL_HOST="$CONSUL_HOST"
 CMD ["/bin/sh", "-c", "java -jar ${JAVA_OPTS} -Dspring.cloud.consul.host=$CONSUL_HOST ${APP_NAME}-latest.jar"]
