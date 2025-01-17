@@ -28,9 +28,6 @@ public class EntryExitLoggingAspect {
      *  - факт входа в метод
      *  - факт выхода из метода
      *  - время, потраченное на выполнение метода
-     * @param joinPoint
-     * @return
-     * @throws Throwable
      */
     @Around("execution(* com.gravitee.example.controller.*.*(..))")
     public Object logExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
@@ -42,8 +39,6 @@ public class EntryExitLoggingAspect {
         long executionTime = System.currentTimeMillis() - start;    // фиксируем время выполнения
         // фиксируем время выполнения целевого метода
         logger.info("Method {} executed in {} ms", joinPoint.getSignature().getName(), executionTime);
-        // фиксируем выход из метода
-        logger.info("Exiting method {}", joinPoint.getSignature().getName());
         return proceed;
     }
 }
