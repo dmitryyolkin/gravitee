@@ -51,7 +51,7 @@ These additional references should also help you:
 
 ### Run from Docker
 * Build docker image 
-  * go to project root and execute `sh ./build-docker.sh gravitee-example 1.0.0`
+  * go to project root and execute `sh ./build-docker.sh gravitee-example 1.0.0 false`
 * Run docker image based on Docker compose
   * If you run from docker-compose - no need to run Consul separately (based on instruction above) 
   * run -> `docker compose -f docker-compose.yml up --force-recreate`
