@@ -2,17 +2,16 @@ FROM amazoncorretto:21-alpine-jdk
 
 # these args should be overwritten on build stage
 ARG APP_NAME
-ARG APP_VERSION
 ARG CONSUL_ENABLED
 ARG CONSUL_HOST
 
-RUN echo $APP_NAME - $APP_VERSION - $CONSUL_ENABLED - $CONSUL_HOST
+RUN echo $APP_NAME - $CONSUL_ENABLED - $CONSUL_HOST
 
 RUN mkdir -p /app/
 COPY build/libs/ /app/
 
 # run app
-RUN ln -sfn /app/${APP_NAME}-${APP_VERSION}.jar /app/${APP_NAME}-latest.jar
+RUN ln -sfn /app/${APP_NAME}.jar /app/${APP_NAME}-latest.jar
 RUN ls -ltrh /app
 
 WORKDIR /app/
