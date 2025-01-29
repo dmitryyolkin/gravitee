@@ -149,10 +149,11 @@ services:
       dockerfile: Dockerfile
       args:
         APP_NAME: gravitee-example
-        APP_VERSION:
         CONSUL_HOST: consul
         CONSUL_ENABLED: true
     restart: always
+    ports:
+      - "8080:8080"
     environment:
       CONSUL_HOST: consul
     depends_on:

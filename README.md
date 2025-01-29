@@ -51,11 +51,13 @@ These additional references should also help you:
 
 ### Run from Docker
 * Build docker image 
-  * go to project root and execute `sh ./build-docker.sh gravitee-example 1.0.0 false`
+  * go to project root and execute `./gradlew clean build`
+  * as a result `build/libs/gravitee-example.jar` will be built
 * Run docker image based on Docker compose
   * If you run from docker-compose - no need to run Consul separately (based on instruction above) 
   * run -> `docker compose -f docker-compose.yml up --force-recreate`
-    * Go with service -> http://consul:8080/hello-world
-    * Go to Consul UI -> http://consul:8500/ui
-      * `consul` hostname is set in Docker compose 
+    * Go with service -> http://localhost:8080/hello-world
+    * Go to Consul UI -> http://localhost:8500/ui
+      * `consul` hostname is set in Docker compose
+    * Go to GragiteeIO Api_management -> `http://localhost:8084/`
   * stop -> `docker compose -f docker-compose.yml down`
