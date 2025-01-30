@@ -16,6 +16,11 @@ repositories {
 	mavenCentral()
 }
 
+tasks.bootJar {
+	archiveFileName.set("${project.name}.jar")
+}
+
+
 extra["springCloudVersion"] = "2024.0.0"
 
 dependencies {

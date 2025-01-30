@@ -6,8 +6,8 @@ spring:
   cloud:
     consul:
       enabled: true
-      host: localhost
-      port: 8500
+      host: ${CONSUL_HOST:localhost}
+      port: ${CONSUL_PORT:8500}
       discovery:
         serviceName: ${spring.application.name}
         instanceId: ${spring.application.name}:${random.value}
