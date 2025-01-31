@@ -9,5 +9,34 @@ spring:
       host: ${CONSUL_HOST:localhost}
       port: ${CONSUL_PORT:8500}
       discovery:
+        enabled: true
         serviceName: ${spring.application.name}
         instanceId: ${spring.application.name}:${random.value}
+        healthCheckPath: /actuator/health
+        healthCheckInterval: 10s
+
+rest:
+  template:
+    connection-timeout: 10000
+    read-timeout: 10000
+
+gravitee:
+  scheme: ${GRAVITEE_SCHEME:http}
+  host: ${GRAVITEE_HOST:localhost}
+  port: ${GRAVITEE_PORT:8083}
+  organization: ${GRAVITEE_ORGANIZATION:DEFAULT}
+  environment: ${GRAVITEE_ENVIRONMENT:DEFAULT}
+  apy-key: ${GRAVITEE_API_KEY}
+
+  discovery:
+    fixed-rate: 10000 # run discovery every 10 seconds
+
+  urls:
+    api:
+      basic: ${gravitee.scheme}://${gravitee.host}:${gravitee.port}/management/v2/organizations/${gravitee.organization}/environments/${gravitee.environment}/apis
+      create: ${gravitee.urls.api.basic}
+      search: ${gravitee.urls.api.basic}/_search
+      start: ${gravitee.urls.api.basic}/%s/_start
+      plan:
+        create: ${gravitee.scheme}://${gravitee.host}:${gravitee.port}/management/v2/organizations/${gravitee.organization}/environments/${gravitee.environment}/apis/%s/plans
+        publish: ${gravitee.scheme}://${gravitee.host}:${gravitee.port}/management/v2/organizations/${gravitee.organization}/environments/${gravitee.environment}/apis/%s/plans/%s/_publish

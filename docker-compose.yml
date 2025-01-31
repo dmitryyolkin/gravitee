@@ -20,10 +20,6 @@ networks:
   storage:
     name: storage
 
-# volumes:
-#   data-elasticsearch:
-#   data-mongo:
-
 services:
   mongodb:
     image: mongo:${MONGODB_VERSION:-6.0.8}
@@ -53,7 +49,7 @@ services:
         hard: -1
       nofile: 65536
     volumes:
-      # Access the Elasticsearch container logs with: docker logs gio_apim_elasticsearch 
+      # Access the Elasticsearch container logs with: docker logs gio_apim_elasticsearch
       - ./elasticsearch/data:/var/lib/elasticsearch/data
     networks:
       - storage
@@ -80,7 +76,7 @@ services:
       - storage
       - frontend
 
-  management_api:
+  managementapi:
     image: graviteeio/apim-management-api:${APIM_VERSION:-4}
     container_name: gio_apim_management_api
     restart: always
@@ -100,7 +96,7 @@ services:
       - gravitee_plugins_path_1=/opt/graviteeio-management-api/plugins-ext
     volumes:
       - ./apim-management-api/logs:/opt/graviteeio-management-api/logs
-      - ./apim-management-api/plugins:/opt/graviteeio-management-api/plugins-ext  
+      - ./apim-management-api/plugins:/opt/graviteeio-management-api/plugins-ext
     networks:
       - storage
       - frontend
@@ -112,7 +108,7 @@ services:
     ports:
       - "8084:8080"
     depends_on:
-      - management_api
+      - managementapi
     environment:
       - MGMT_API_URL=http://localhost:8083/management/organizations/DEFAULT/environments/DEFAULT/
     volumes:
@@ -127,14 +123,14 @@ services:
     ports:
       - "8085:8080"
     depends_on:
-      - management_api
+      - managementapi
     environment:
       - PORTAL_API_URL=http://localhost:8083/portal/environments/DEFAULT
     volumes:
       - ./apim-portal-ui/logs:/var/log/nginx
     networks:
       - frontend
-  
+
   consul:
     image: "hashicorp/consul"
     ports:
@@ -151,11 +147,14 @@ services:
         APP_NAME: gravitee-example
         CONSUL_HOST: consul
         CONSUL_ENABLED: true
+        GRAVITEE_HOST: managementapi
     restart: always
     ports:
       - "8080:8080"
     environment:
       CONSUL_HOST: consul
+      # GRAVITEE_API_KEY should be changed
+      GRAVITEE_API_KEY: 5fdbc587-e1c2-41bf-9bc5-87e1c251bf5b
     depends_on:
       - gateway
       - consul

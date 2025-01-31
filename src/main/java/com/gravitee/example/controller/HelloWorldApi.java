@@ -16,9 +16,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @Tag(name = "Examples")
 @Validated
-public interface HelloWorldApi {
+public interface HelloWorldApi extends ExternalRestController {
 
-    @Operation(summary = "Hello Api example",
+    String HELLO_WORLD_CONTEXT_PATH = "/hello-world";
+
+    @Operation(summary = "Hello ApiDTO example",
             operationId = "helloWorld", responses =
             {
                     @ApiResponse(responseCode = "200", description = "All is ok",
@@ -28,8 +30,18 @@ public interface HelloWorldApi {
                     ),
             })
     @GetMapping(
-            value = "/hello-world",
+            value = HELLO_WORLD_CONTEXT_PATH,
             produces = APPLICATION_JSON_VALUE
     )
     ResponseEntity<Response> helloWorld(HttpServletRequest httpServletRequest);
+
+    @Override
+    default String getName() {
+        return "Hello-world";
+    }
+
+    @Override
+    default String getContextPath() {
+        return HELLO_WORLD_CONTEXT_PATH;
+    }
 }

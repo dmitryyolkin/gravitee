@@ -4,8 +4,9 @@ FROM amazoncorretto:21-alpine-jdk
 ARG APP_NAME
 ARG CONSUL_ENABLED
 ARG CONSUL_HOST
+ARG GRAVITEE_HOST
 
-RUN echo $APP_NAME - $CONSUL_ENABLED - $CONSUL_HOST
+RUN echo $APP_NAME - $CONSUL_ENABLED - $CONSUL_HOST - $GRAVITEE_HOST
 
 RUN mkdir -p /app/
 COPY build/libs/ /app/
@@ -18,4 +19,5 @@ WORKDIR /app/
 ENV APP_NAME=${APP_NAME}
 ENV JAVA_OPTS="-XX:+PrintFlagsFinal -Dlogging.config=classpath:logback-cloud.xml -Dspring.cloud.consul.enabled=$CONSUL_ENABLED"
 ENV CONSUL_HOST="$CONSUL_HOST"
-CMD ["/bin/sh", "-c", "java -jar ${JAVA_OPTS} -Dspring.cloud.consul.host=$CONSUL_HOST ${APP_NAME}-latest.jar"]
+ENV GRAVITEE_HOST="$GRAVITEE_HOST"
+CMD ["/bin/sh", "-c", "java -jar ${JAVA_OPTS} -Dspring.cloud.consul.host=$CONSUL_HOST -Dgravitee.host=$GRAVITEE_HOST ${APP_NAME}-latest.jar"]

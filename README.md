@@ -49,6 +49,11 @@ These additional references should also help you:
       ```
       * Go to Consul UI http://localhost:8500/ 
 
+### Gravitee
+
+* Gravitee API
+  * Docs and models can be found at https://gravitee-io-labs.github.io/mapi-v2-docs-openapi-apis 
+
 ### Run from Docker
 * Build docker image 
   * go to project root and execute `./gradlew clean build`
@@ -56,8 +61,18 @@ These additional references should also help you:
 * Run docker image based on Docker compose
   * If you run from docker-compose - no need to run Consul separately (based on instruction above) 
   * run -> `docker compose -f docker-compose.yml up --force-recreate`
-    * Go with service -> http://localhost:8080/hello-world
+    * Please keep attention: if you run docker compose 1st time then you need to do as follows
+      * please comment `service-helloworld` service in `docker-compose.yml`
+      * go to Gragitee Api Management -> `http://localhost:8084/
+        * go to Organization -> Users tab
+        * go to `admin` (or other user) user and click `Generate personal token`
+        copy this token and insert it into `docker-compose.yml` in `GRAVITEE_API_KEY` arg
+      * then uncomment `service-helloworld` service in `docker-compose.yml` and re-run everything again 
     * Go to Consul UI -> http://localhost:8500/ui
-      * `consul` hostname is set in Docker compose
-    * Go to GragiteeIO Api_management -> `http://localhost:8084/`
+    * Go to Gragitee Api Management -> `http://localhost:8084/`
+    * You can access to /hello-world controller 
+      * via hello-service directly -> http://localhost:8080/hello-world
+      * via Gravitee Api Gateway -> http://localhost:8082/hello-world
+        * + Hello-world service is registered in Gragitee Api Management -> APIs tab
+        + Monitor hello-world logs can be found with `docker logs -f --tail 20 gravitee-service-helloworld-1`
   * stop -> `docker compose -f docker-compose.yml down`
