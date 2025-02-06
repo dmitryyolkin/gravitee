@@ -18,8 +18,13 @@
         </encoder>
     </appender>
 
+    <!--  Root Logger: Определяет уровень логирования по умолчанию для всех логгеров, если они не переопределены.  -->
+    <root level="INFO">
+        <appender-ref ref="JSON"/>
+    </root>
+
     <!--  Logger: Определяет уровень логирования для определенного пакета.  -->
-    <logger name="com.gravitee.example.controller" level="INFO" additivity="false">
+    <logger name="com.gravitee.example" level="DEBUG" additivity="false">
         <appender-ref ref="JSON"/>
     </logger>
 
@@ -27,13 +32,13 @@
     <logger name="com.yourpackage.aspects.EntryExitLoggingAspect" level="INFO" additivity="false">
         <appender-ref ref="JSON"/>
     </logger>
-    <!--  Для уровня логирования DEBUG, используем расширенный логгер  -->
-    <logger name="com.yourpackage.aspects.DetailsLoggingAspect" level="DEBUG" additivity="false">
+
+    <logger name="org.apache.http" level="INFO" additivity="false">
         <appender-ref ref="JSON"/>
     </logger>
 
-    <!--  Root Logger: Определяет уровень логирования по умолчанию для всех логгеров, если они не переопределены.  -->
-    <root level="DEBUG">
+    <logger name="org.springframework" level="INFO" additivity="false">
         <appender-ref ref="JSON"/>
-    </root>
+    </logger>
+
 </configuration>

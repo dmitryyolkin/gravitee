@@ -3,6 +3,33 @@ spring:
     discovery:
       enabled: false
     consul:
+      discovery:
+        serviceName: "test"
       enabled: false
       config:
         enabled: false
+
+rest:
+  template:
+    connection-timeout: 10000
+    read-timeout: 10000
+
+gravitee:
+  scheme: http
+  host: localhost
+  port: 8083
+  organization: DEFAULT
+  environment: DEFAULT
+  apy-key: null
+
+  discovery:
+    fixed-rate: 10000 # run discovery every 10 seconds
+
+  urls:
+    api:
+      create: /create
+      search: /search
+      start: /start
+      plan:
+        create: /plans/create
+        publish: /plans/publish
