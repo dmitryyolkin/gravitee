@@ -2,18 +2,20 @@ package com.gravitee.example.gravitee;
 
 import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gravitee.example.gravitee.dto.api.ApiDTO;
 import com.gravitee.example.gravitee.dto.api.ApiDetailsDTO;
-import com.gravitee.example.gravitee.dto.api.CreateApiDTO;
 import com.gravitee.example.gravitee.dto.api.SearchApiDTO;
 import com.gravitee.example.gravitee.dto.api.SearchApiResultDTO;
 import com.gravitee.example.gravitee.dto.api.details.plan.PlanDTO;
 import com.gravitee.example.gravitee.dto.api.details.plan.PlanDetailsDTO;
 import jakarta.annotation.Nullable;
 import java.util.List;
+import java.util.function.Function;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -47,12 +49,31 @@ public class GraviteeAPIService implements GraviteeAPI {
     }
 
     @Override
-    public ApiDetailsDTO createApi(CreateApiDTO createApi) throws GraviteeApiServiceException {
+    public ApiDetailsDTO createApi(ApiDTO api) throws GraviteeApiServiceException {
         return sendRequest2Gravitee(
                 graviteeConfig.getCreateApiUrl(),
-                createApi,
+                api,
                 body -> objectMapper.readValue(body, ApiDetailsDTO.class),
                 "createApi"
+        );
+    }
+
+    @Override
+    public void updateApi(String id, ApiDTO api) throws GraviteeApiServiceException {
+        sendRequest2Gravitee(
+                graviteeConfig.getUpdateApiUrl(),
+                api,
+                request -> {
+                    restTemplate.put(
+                            String.format(graviteeConfig.getUpdateApiUrl(), id),
+                            request
+                    );
+                    return new ResponseEntity<>(
+                            HttpStatus.OK
+                    );
+                },
+                body -> body,
+                "updateApi"
         );
     }
 
@@ -88,7 +109,7 @@ public class GraviteeAPIService implements GraviteeAPI {
 
     @Override
     public boolean stopApi(String apiId) throws GraviteeApiServiceException {
-        return false;
+        throw new UnsupportedOperationException("Need to implement");
     }
 
     private HttpHeaders createHttpHeaders() {
@@ -101,7 +122,22 @@ public class GraviteeAPIService implements GraviteeAPI {
     private <T, P> T sendRequest2Gravitee(String url,
                                           @Nullable P payload,
                                           JacksonResponseTransformer<String, T> transformer,
-                                          String action) throws GraviteeApiServiceException{
+                                          String action) throws GraviteeApiServiceException {
+        return sendRequest2Gravitee(
+                url,
+                payload,
+                request -> restTemplate.postForEntity(url, request, String.class),
+                transformer,
+                action
+        );
+    }
+
+
+    private <T, P> T sendRequest2Gravitee(String url,
+                                          @Nullable P payload,
+                                          Function<HttpEntity<String>, ResponseEntity<String>> sender,
+                                          JacksonResponseTransformer<String, T> transformer,
+                                          String action) throws GraviteeApiServiceException {
         try {
             HttpEntity<String> request = new HttpEntity<>(
                     payload != null ? objectMapper.writeValueAsString(payload) : null,
@@ -109,11 +145,7 @@ public class GraviteeAPIService implements GraviteeAPI {
             );
 
             // Отправляем запрос в Gravitee
-            ResponseEntity<String> response = restTemplate.postForEntity(
-                    url,
-                    request,
-                    String.class
-            );
+            ResponseEntity<String> response = sender.apply(request);
             if (response.getStatusCode().is2xxSuccessful()) {
                 return transformer.transform(response.getBody());
             }
@@ -125,15 +157,15 @@ public class GraviteeAPIService implements GraviteeAPI {
         }
     }
 
+    @FunctionalInterface
+    public interface JacksonResponseTransformer<T, R> {
+        R transform(@Nullable T t) throws JacksonException;
+    }
+
     public static class GraviteeApiServiceException extends Exception {
         public GraviteeApiServiceException(String message, Throwable cause) {
             super(message, cause);
         }
-    }
-
-    @FunctionalInterface
-    public interface JacksonResponseTransformer<T, R> {
-        R transform(@Nullable T t) throws JacksonException;
     }
 
 }

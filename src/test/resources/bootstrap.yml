@@ -28,6 +28,7 @@ gravitee:
   urls:
     api:
       create: /create
+      update: /update
       search: /search
       start: /start
       plan:
