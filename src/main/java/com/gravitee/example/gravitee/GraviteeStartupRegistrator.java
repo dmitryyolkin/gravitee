@@ -4,8 +4,8 @@ import com.gravitee.example.controller.ExternalRestController;
 import com.gravitee.example.discovery.ServiceDiscovery;
 import com.gravitee.example.discovery.ServiceDiscovery.ServiceInstanceRecord;
 import com.gravitee.example.gravitee.GraviteeAPIService.GraviteeApiServiceException;
+import com.gravitee.example.gravitee.dto.api.ApiDTO;
 import com.gravitee.example.gravitee.dto.api.ApiDetailsDTO;
-import com.gravitee.example.gravitee.dto.api.CreateApiDTO;
 import com.gravitee.example.gravitee.dto.api.SearchApiDTO;
 import com.gravitee.example.gravitee.dto.api.details.ApiListener;
 import com.gravitee.example.gravitee.dto.api.details.ApiType;
@@ -32,6 +32,7 @@ import com.gravitee.example.gravitee.dto.api.details.plan.details.PlanSecurityTy
 import com.gravitee.example.gravitee.dto.api.details.plan.details.PlanValidation;
 import com.gravitee.example.gravitee.dto.api.details.ssl.SslOptions;
 import java.util.List;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -54,6 +55,26 @@ public class GraviteeStartupRegistrator<T extends ExternalRestController> {
         this.graviteeAPIService = graviteeAPIService;
     }
 
+    private static boolean canBeUpdated(List<ServiceInstanceRecord> instances, ApiDetailsDTO currApi) {
+        List<EndpointGroup> endpointGroups = Optional.ofNullable(currApi.getEndpointGroups()).orElse(List.of());
+        for (EndpointGroup endpointGroup : endpointGroups) {
+            List<Endpoint> endpoints = Optional.ofNullable(endpointGroup.getEndpoints()).orElse(List.of());
+            for (Endpoint endpoint : endpoints) {
+                String target = Optional
+                        .ofNullable(endpoint.getConfiguration())
+                        .map(EndpointConfiguration::getTarget)
+                        .orElse(null);
+
+                if (target != null
+                        && instances.stream().noneMatch(i -> target.contains(i.toString()))) {
+                    return true;
+                }
+            }
+
+        }
+        return false;
+    }
+
     @Scheduled(fixedRateString = "${gravitee.discovery.fixed-rate}")
     public void schedule() {
         log.debug("=== Run Gravitee registration ===");
@@ -61,6 +82,14 @@ public class GraviteeStartupRegistrator<T extends ExternalRestController> {
         if (!serviceInstances.isEmpty()) {
             for (T controller : externalRestControllers) {
                 try {
+                    List<ApiDetailsDTO> currApi = graviteeAPIService.getAPi(new SearchApiDTO(controller.getName()));
+                    if (!currApi.isEmpty()) {
+                        log.debug("Controller {} was already registered", controller.getName());
+
+                        try2UpdateApi(currApi, controller, serviceInstances);
+                        continue;
+                    }
+
                     register(controller, serviceInstances);
                 } catch (GraviteeApiServiceException e) {
                     log.error("Can't register controller {}", controller.getName(), e);
@@ -69,14 +98,7 @@ public class GraviteeStartupRegistrator<T extends ExternalRestController> {
         }
     }
 
-    public boolean register(T controller, List<ServiceInstanceRecord> instances) throws GraviteeApiServiceException {
-
-        List<ApiDetailsDTO> currApi = graviteeAPIService.getAPi(new SearchApiDTO(controller.getName()));
-        if (!currApi.isEmpty()) {
-            log.debug("Controller {} was already registered", controller.getName());
-            return false;
-        }
-
+    private boolean register(T controller, List<ServiceInstanceRecord> instances) throws GraviteeApiServiceException {
         // create API
         ApiDetailsDTO api = createApi(controller, instances);
         // create Plan
@@ -86,6 +108,24 @@ public class GraviteeStartupRegistrator<T extends ExternalRestController> {
         // start API
         graviteeAPIService.startApi(api.getId());
         return true;
+    }
+
+    private void try2UpdateApi(List<ApiDetailsDTO> currApis,
+                               T controller,
+                               List<ServiceInstanceRecord> instances) throws GraviteeApiServiceException {
+        if (currApis.size() > 1) {
+            log.warn("There are more than 1 api. It's not clear which one to update");
+            return;
+        }
+
+        ApiDetailsDTO currApi = currApis.getFirst();
+
+        // update
+        if (!canBeUpdated(instances, currApi)) {
+            return;
+        }
+
+        graviteeAPIService.updateApi(currApi.getId(), generateApiDTO(controller, instances));
     }
 
     private PlanDetailsDTO createApiPlan(T controller, ApiDetailsDTO api) throws GraviteeApiServiceException {
@@ -105,7 +145,12 @@ public class GraviteeStartupRegistrator<T extends ExternalRestController> {
     }
 
     private ApiDetailsDTO createApi(T controller, List<ServiceInstanceRecord> instances) throws GraviteeApiServiceException {
-        return graviteeAPIService.createApi(CreateApiDTO
+        return graviteeAPIService.createApi(generateApiDTO(controller, instances));
+    }
+
+    private static <T extends ExternalRestController> ApiDTO generateApiDTO(T controller,
+                                                                            List<ServiceInstanceRecord> instances) {
+        return ApiDTO
                 .builder()
                 .name(controller.getName())
                 .apiVersion(controller.getVersion())
@@ -187,7 +232,7 @@ public class GraviteeStartupRegistrator<T extends ExternalRestController> {
                                 new EndpointServices()
                         )
                 ))
-                .build());
+                .build();
     }
 
 

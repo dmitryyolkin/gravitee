@@ -35,6 +35,7 @@ gravitee:
     api:
       basic: ${gravitee.scheme}://${gravitee.host}:${gravitee.port}/management/v2/organizations/${gravitee.organization}/environments/${gravitee.environment}/apis
       create: ${gravitee.urls.api.basic}
+      update: ${gravitee.urls.api.basic}/%s
       search: ${gravitee.urls.api.basic}/_search
       start: ${gravitee.urls.api.basic}/%s/_start
       plan:

@@ -19,8 +19,11 @@ public class GraviteeConfig {
     private String env;
     @Value("${gravitee.apy-key}")
     private String apiKey;
+
     @Value("${gravitee.urls.api.create}")
     private String createApiUrl;
+    @Value("${gravitee.urls.api.update}")
+    private String updateApiUrl;
     @Value("${gravitee.urls.api.search}")
     private String searchApiUrl;
     @Value("${gravitee.urls.api.start}")
