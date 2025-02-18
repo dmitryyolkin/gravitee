@@ -6,15 +6,20 @@ import com.gravitee.example.gravitee.dto.api.ApiDTO;
 import com.gravitee.example.gravitee.dto.api.ApiDetailsDTO;
 import com.gravitee.example.gravitee.dto.api.SearchApiDTO;
 import com.gravitee.example.gravitee.dto.api.SearchApiResultDTO;
+import com.gravitee.example.gravitee.dto.api.details.pages.ListPageDocumentationDetailsDTO;
+import com.gravitee.example.gravitee.dto.api.details.pages.PageDocumentationDTO;
+import com.gravitee.example.gravitee.dto.api.details.pages.PageDetailsDocumentationDTO;
 import com.gravitee.example.gravitee.dto.api.details.plan.PlanDTO;
 import com.gravitee.example.gravitee.dto.api.details.plan.PlanDetailsDTO;
 import jakarta.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -110,6 +115,62 @@ public class GraviteeAPIService implements GraviteeAPI {
     @Override
     public boolean stopApi(String apiId) throws GraviteeApiServiceException {
         throw new UnsupportedOperationException("Need to implement");
+    }
+
+    @Override
+    public ListPageDocumentationDetailsDTO getApiPageDocumentation(String apiId) throws GraviteeApiServiceException {
+        String url = String.format(graviteeConfig.getGetApiPagesUrlTemplate(), apiId);
+        return sendRequest2Gravitee(
+                url,
+                null,
+                request -> restTemplate
+                        .exchange(
+                                url,
+                                HttpMethod.GET,
+                                request,
+                                String.class,
+                                Map.of()
+                        ),
+                body -> objectMapper.readValue(body, ListPageDocumentationDetailsDTO.class),
+                "getPageApi"
+        );
+    }
+
+    @Override
+    public PageDetailsDocumentationDTO createApiPageDocumentation(String apiId, PageDocumentationDTO pageDTO) throws GraviteeApiServiceException {
+        return sendRequest2Gravitee(
+                String.format(graviteeConfig.getCreateApiPagesUrlTemplate(), apiId),
+                pageDTO,
+                body -> objectMapper.readValue(body, PageDetailsDocumentationDTO.class),
+                "createApiPageDocumentation"
+        );
+    }
+
+    @Override
+    public void updateApiPageDocumentation(String apiId, String pageId, PageDocumentationDTO pageDTO) throws GraviteeApiServiceException {
+        String url = String.format(graviteeConfig.getUpdateApiPagesUrlTemplate(), apiId, pageId);
+        sendRequest2Gravitee(
+                url,
+                pageDTO,
+                request -> {
+                    restTemplate.put(url, request);
+                    return new ResponseEntity<>(
+                            HttpStatus.OK
+                    );
+                },
+                body -> body,
+                "updateApiPageDocumentation"
+        );
+    }
+
+    @Override
+    public PageDetailsDocumentationDTO publishApiPageDocumentation(String apiId, String pageId) throws GraviteeApiServiceException {
+        return sendRequest2Gravitee(
+                String.format(graviteeConfig.getPublishApiPagesUrlTemplate(), apiId, pageId),
+                null,
+                body -> objectMapper.readValue(body, PageDetailsDocumentationDTO.class),
+                "publishPageDocumentation"
+        );
     }
 
     private HttpHeaders createHttpHeaders() {

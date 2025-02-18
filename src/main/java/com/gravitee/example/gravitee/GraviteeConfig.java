@@ -33,4 +33,13 @@ public class GraviteeConfig {
     @Value("${gravitee.urls.api.plan.publish}")
     private String publishApiPlanUrlTemplate;
 
+    @Value("${gravitee.urls.api.pages.get}")
+    private String getApiPagesUrlTemplate;
+    @Value("${gravitee.urls.api.pages.create}")
+    private String createApiPagesUrlTemplate;
+    @Value("${gravitee.urls.api.pages.update}")
+    private String updateApiPagesUrlTemplate;
+    @Value("${gravitee.urls.api.pages.publish}")
+    private String publishApiPagesUrlTemplate;
+
 }
