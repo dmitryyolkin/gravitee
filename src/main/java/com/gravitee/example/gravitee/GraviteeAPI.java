@@ -4,6 +4,9 @@ import com.gravitee.example.gravitee.GraviteeAPIService.GraviteeApiServiceExcept
 import com.gravitee.example.gravitee.dto.api.ApiDTO;
 import com.gravitee.example.gravitee.dto.api.ApiDetailsDTO;
 import com.gravitee.example.gravitee.dto.api.SearchApiDTO;
+import com.gravitee.example.gravitee.dto.api.details.pages.ListPageDocumentationDetailsDTO;
+import com.gravitee.example.gravitee.dto.api.details.pages.PageDocumentationDTO;
+import com.gravitee.example.gravitee.dto.api.details.pages.PageDetailsDocumentationDTO;
 import com.gravitee.example.gravitee.dto.api.details.plan.PlanDTO;
 import com.gravitee.example.gravitee.dto.api.details.plan.PlanDetailsDTO;
 import java.util.List;
@@ -23,4 +26,12 @@ public interface GraviteeAPI {
     boolean startApi(String apiId) throws GraviteeApiServiceException;
 
     boolean stopApi(String apiId) throws GraviteeApiServiceException;
+
+    ListPageDocumentationDetailsDTO getApiPageDocumentation(String apiId) throws GraviteeApiServiceException;
+
+    PageDetailsDocumentationDTO createApiPageDocumentation(String apiId, PageDocumentationDTO pageDTO) throws GraviteeApiServiceException;
+
+    void updateApiPageDocumentation(String apiId, String pageId, PageDocumentationDTO pageDTO) throws GraviteeApiServiceException;
+
+    PageDetailsDocumentationDTO publishApiPageDocumentation(String apiId, String pageId) throws GraviteeApiServiceException;
 }

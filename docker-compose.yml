@@ -158,6 +158,7 @@ services:
     depends_on:
       - gateway
       - consul
+      - managementapi
     networks:
       - frontend
     

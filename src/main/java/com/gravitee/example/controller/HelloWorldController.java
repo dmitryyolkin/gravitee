@@ -1,8 +1,10 @@
 package com.gravitee.example.controller;
 
+import jakarta.annotation.Nullable;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,6 +15,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class HelloWorldController implements HelloWorldApi {
 
     private static final Logger log = LoggerFactory.getLogger(HelloWorldController.class);
+    private final OpenApiExtractor openApiExtractor;
+
+    @Autowired
+    public HelloWorldController(OpenApiExtractor openApiExtractor) {
+        this.openApiExtractor = openApiExtractor;
+    }
 
     @Override
     public ResponseEntity<Response> helloWorld(HttpServletRequest httpServletRequest) {
@@ -27,6 +35,11 @@ public class HelloWorldController implements HelloWorldApi {
         );
     }
 
+    @Override
+    @Nullable
+    public String getOpenApiSchema() {
+        return openApiExtractor.getOpenApiSchema(getContextPath());
+    }
 
     public record Response(long timestamp, String value) {
     }

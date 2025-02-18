@@ -25,6 +25,11 @@ import com.gravitee.example.gravitee.dto.api.details.LoadBalancerType;
 import com.gravitee.example.gravitee.dto.api.details.Path;
 import com.gravitee.example.gravitee.dto.api.details.ProxyConfiguration;
 import com.gravitee.example.gravitee.dto.api.details.Visibility;
+import com.gravitee.example.gravitee.dto.api.details.pages.ListPageDocumentationDetailsDTO;
+import com.gravitee.example.gravitee.dto.api.details.pages.PageDetailsDocumentationDTO;
+import com.gravitee.example.gravitee.dto.api.details.pages.PageDocumentationDTO;
+import com.gravitee.example.gravitee.dto.api.details.pages.PageDocumentationType;
+import com.gravitee.example.gravitee.dto.api.details.pages.PageDocumentationVisibility;
 import com.gravitee.example.gravitee.dto.api.details.plan.PlanDTO;
 import com.gravitee.example.gravitee.dto.api.details.plan.PlanDetailsDTO;
 import com.gravitee.example.gravitee.dto.api.details.plan.details.PlanSecurity;
@@ -34,6 +39,7 @@ import com.gravitee.example.gravitee.dto.api.details.ssl.SslOptions;
 import java.util.List;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -70,82 +76,8 @@ public class GraviteeStartupRegistrator<T extends ExternalRestController> {
                     return true;
                 }
             }
-
         }
         return false;
-    }
-
-    @Scheduled(fixedRateString = "${gravitee.discovery.fixed-rate}")
-    public void schedule() {
-        log.debug("=== Run Gravitee registration ===");
-        List<ServiceInstanceRecord> serviceInstances = serviceDiscovery.getServiceInstances();
-        if (!serviceInstances.isEmpty()) {
-            for (T controller : externalRestControllers) {
-                try {
-                    List<ApiDetailsDTO> currApi = graviteeAPIService.getAPi(new SearchApiDTO(controller.getName()));
-                    if (!currApi.isEmpty()) {
-                        log.debug("Controller {} was already registered", controller.getName());
-
-                        try2UpdateApi(currApi, controller, serviceInstances);
-                        continue;
-                    }
-
-                    register(controller, serviceInstances);
-                } catch (GraviteeApiServiceException e) {
-                    log.error("Can't register controller {}", controller.getName(), e);
-                }
-            }
-        }
-    }
-
-    private boolean register(T controller, List<ServiceInstanceRecord> instances) throws GraviteeApiServiceException {
-        // create API
-        ApiDetailsDTO api = createApi(controller, instances);
-        // create Plan
-        PlanDetailsDTO plan = createApiPlan(controller, api);
-        // publish plan
-        graviteeAPIService.publishPlan(plan);
-        // start API
-        graviteeAPIService.startApi(api.getId());
-        return true;
-    }
-
-    private void try2UpdateApi(List<ApiDetailsDTO> currApis,
-                               T controller,
-                               List<ServiceInstanceRecord> instances) throws GraviteeApiServiceException {
-        if (currApis.size() > 1) {
-            log.warn("There are more than 1 api. It's not clear which one to update");
-            return;
-        }
-
-        ApiDetailsDTO currApi = currApis.getFirst();
-
-        // update
-        if (!canBeUpdated(instances, currApi)) {
-            return;
-        }
-
-        graviteeAPIService.updateApi(currApi.getId(), generateApiDTO(controller, instances));
-    }
-
-    private PlanDetailsDTO createApiPlan(T controller, ApiDetailsDTO api) throws GraviteeApiServiceException {
-        return graviteeAPIService.createPlan(
-                api.getId(),
-                new PlanDTO(
-                        String.format("%s: %s", controller.getName(), "Keyless Plan"),
-                        "Plan without authentication",
-                        DefinitionVersion.V4,
-                        PlanValidation.AUTO,
-                        new PlanSecurity(
-                                PlanSecurityType.KEY_LESS,
-                                null
-                        )
-                )
-        );
-    }
-
-    private ApiDetailsDTO createApi(T controller, List<ServiceInstanceRecord> instances) throws GraviteeApiServiceException {
-        return graviteeAPIService.createApi(generateApiDTO(controller, instances));
     }
 
     private static <T extends ExternalRestController> ApiDTO generateApiDTO(T controller,
@@ -233,6 +165,153 @@ public class GraviteeStartupRegistrator<T extends ExternalRestController> {
                         )
                 ))
                 .build();
+    }
+
+    @Scheduled(fixedRateString = "${gravitee.discovery.fixed-rate}")
+    public void schedule() {
+        log.debug("=== Run Gravitee registration ===");
+        List<ServiceInstanceRecord> serviceInstances = serviceDiscovery.getServiceInstances();
+        if (!serviceInstances.isEmpty()) {
+            for (T controller : externalRestControllers) {
+                try {
+                    List<ApiDetailsDTO> currApi = graviteeAPIService.getAPi(new SearchApiDTO(controller.getName()));
+                    if (!currApi.isEmpty()) {
+                        log.debug("Controller {} was already registered", controller.getName());
+
+                        try2UpdateApi(currApi, controller, serviceInstances);
+                        continue;
+                    }
+
+                    register(controller, serviceInstances);
+                } catch (GraviteeApiServiceException e) {
+                    log.error("Can't register controller {}", controller.getName(), e);
+                }
+            }
+        }
+    }
+
+    private boolean register(T controller, List<ServiceInstanceRecord> instances) throws GraviteeApiServiceException {
+        // create API
+        ApiDetailsDTO api = createApi(controller, instances);
+        // create Plan
+        PlanDetailsDTO plan = createApiPlan(controller, api);
+        // publish plan
+        graviteeAPIService.publishPlan(plan);
+
+        // docs
+        String apiId = api.getId();
+        String schema = controller.getOpenApiSchema();
+        if (Strings.isNotBlank(schema)) {
+            // create docs
+            PageDetailsDocumentationDTO pageDetailsDTO = graviteeAPIService.createApiPageDocumentation(
+                    apiId,
+                    new PageDocumentationDTO(
+                            controller.getName(),
+                            PageDocumentationType.SWAGGER,
+                            schema,
+                            PageDocumentationVisibility.PUBLIC
+                    )
+            );
+
+            // publish docs
+            graviteeAPIService.publishApiPageDocumentation(apiId, pageDetailsDTO.getId());
+        }
+
+        // start API
+        graviteeAPIService.startApi(apiId);
+        return true;
+    }
+
+    private void try2UpdateApi(List<ApiDetailsDTO> currApis,
+                               T controller,
+                               List<ServiceInstanceRecord> instances) throws GraviteeApiServiceException {
+        if (currApis.size() > 1) {
+            log.warn("There are more than 1 api. It's not clear which one to update");
+            return;
+        }
+
+        ApiDetailsDTO currApi = currApis.getFirst();
+
+        // update
+        String apiId = currApi.getId();
+        if (canBeUpdated(instances, currApi)) {
+            graviteeAPIService.updateApi(apiId, generateApiDTO(controller, instances));
+        }
+
+        // check docs
+        String schema = controller.getOpenApiSchema();
+        ListPageDocumentationDetailsDTO pageApi = graviteeAPIService.getApiPageDocumentation(apiId);
+        if (canBeUpdatedOpenApiSchema(pageApi, schema, apiId, controller.getName())) {
+            // create docs
+            PageDocumentationDTO pageDTO = new PageDocumentationDTO(
+                    controller.getName(),
+                    PageDocumentationType.SWAGGER,
+                    schema,
+                    PageDocumentationVisibility.PUBLIC
+            );
+
+            if (pageApi == null || pageApi.getPages().isEmpty()) {
+                // create
+                PageDetailsDocumentationDTO dto = graviteeAPIService.createApiPageDocumentation(apiId, pageDTO);
+                // publish docs
+                graviteeAPIService.publishApiPageDocumentation(apiId, dto.getId());
+            } else {
+                // update
+                graviteeAPIService.updateApiPageDocumentation(apiId, pageApi.getPages().getFirst().getId(), pageDTO);
+            }
+
+        }
+    }
+
+    private boolean canBeUpdatedOpenApiSchema(ListPageDocumentationDetailsDTO pageApi, String schema,
+                                              String apiId,
+                                              String controllerName) {
+        if (Strings.isBlank(schema)) {
+            return false;
+        }
+
+        if (pageApi == null) {
+            return true;
+        }
+
+        List<PageDetailsDocumentationDTO> pages = pageApi.getPages();
+        if (pages.isEmpty()) {
+            return true;
+        }
+
+        if (pages.size() > 1) {
+            log.debug("Pages more than 1");
+            return false;
+        }
+
+        PageDetailsDocumentationDTO page = pages.getFirst();
+        if (schema.equalsIgnoreCase(page.getContent())) {
+            // update
+            log.debug("OpenApi schema for {} is actual", controllerName);
+            return false;
+        }
+
+        return true;
+    }
+
+    private PlanDetailsDTO createApiPlan(T controller, ApiDetailsDTO api) throws GraviteeApiServiceException {
+        return graviteeAPIService.createPlan(
+                api.getId(),
+                new PlanDTO(
+                        String.format("%s: %s", controller.getName(), "Keyless Plan"),
+                        "Plan without authentication",
+                        DefinitionVersion.V4,
+                        PlanValidation.AUTO,
+                        new PlanSecurity(
+                                PlanSecurityType.KEY_LESS,
+                                null
+                        )
+                )
+        );
+    }
+
+    private ApiDetailsDTO createApi(T controller, List<ServiceInstanceRecord> instances) throws GraviteeApiServiceException {
+        return graviteeAPIService.createApi(generateApiDTO(controller, instances));
     }
 
 

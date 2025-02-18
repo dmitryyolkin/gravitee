@@ -34,3 +34,8 @@ gravitee:
       plan:
         create: /plans/create
         publish: /plans/publish
+      pages:
+        get: /pages
+        create: /pages
+        update: /pages/update
+        publish: /pages/_publish

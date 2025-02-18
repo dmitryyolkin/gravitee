@@ -1,5 +1,7 @@
 package com.gravitee.example.controller;
 
+import jakarta.annotation.Nullable;
+
 public interface ExternalRestController {
 
     String getName();
@@ -9,5 +11,8 @@ public interface ExternalRestController {
     }
 
     String getContextPath();
+
+    @Nullable
+    String getOpenApiSchema();
 
 }

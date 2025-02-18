@@ -41,3 +41,8 @@ gravitee:
       plan:
         create: ${gravitee.scheme}://${gravitee.host}:${gravitee.port}/management/v2/organizations/${gravitee.organization}/environments/${gravitee.environment}/apis/%s/plans
         publish: ${gravitee.scheme}://${gravitee.host}:${gravitee.port}/management/v2/organizations/${gravitee.organization}/environments/${gravitee.environment}/apis/%s/plans/%s/_publish
+      pages:
+        get: ${gravitee.urls.api.basic}/%s/pages
+        create: ${gravitee.urls.api.basic}/%s/pages
+        update: ${gravitee.urls.api.basic}/%s/pages/%s
+        publish: ${gravitee.urls.api.basic}/%s/pages/%s/_publish
